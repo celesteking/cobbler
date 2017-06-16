@@ -89,6 +89,11 @@ except:
             # okay, probably on old os and we'll just use generic26
             pass
 
+sectors_supported = False
+rc, response = utils.subprocess_get_response(
+    shlex.split('virt-install --disk=? | grep -q logical_block_size'), True)
+if rc == 0:
+    sectors_supported = True
 
 def _sanitize_disks(disks):
     ret = []
@@ -421,7 +426,7 @@ def build_commandline(uri,
             cmd += ",bus=%s" % disk_bus
         if driver_type and not disable_driver_type:
             cmd += ",format=%s" % driver_type
-	if sector_size and StrictVersion(virtinst_version) >= StrictVersion('1.4.0'):
+	if sectors_supported and sector_size and StrictVersion(virtinst_version) >= StrictVersion('1.4.0'):
 	    lbs, pbs = {		
                 '4kn':  (4096, 4096),
                 '512e': (512, 4096),
