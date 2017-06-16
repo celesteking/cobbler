@@ -1437,6 +1437,21 @@ def set_virt_disk_driver(self,driver):
     self.virt_disk_driver = driver
     return True
 
+def set_virt_disk_sectors(self,vals):
+    """
+    For Virt only.
+    """
+    if vals != '<<inherit>>':
+        tokens = vals.split(",")
+        for t in tokens:
+            if not re.search('^(512|512e|4kn)$', t, re.I):
+                raise CX(_("invalid sector size (%s)" % t))
+
+        #if len(self.virt_path.split(',')) != len(tokens):
+        #    raise CX("number of sector items doesn't match number of virt path items")
+    self.virt_disk_sectors = vals
+    return True
+
 def set_virt_auto_boot(self,num):
     """
     For Virt only.
@@ -1457,6 +1472,26 @@ def set_virt_auto_boot(self,num):
         raise CX(_("invalid virt_auto_boot value (%s): value must be either '0' (disabled) or '1' (enabled)" % inum))
     except:
         raise CX(_("invalid virt_auto_boot value (%s): value must be either '0' (disabled) or '1' (enabled)" % num))
+    return True
+
+def set_virt_uefi_boot(self,num):
+    """
+    For Virt only.
+    """
+
+    if num == "<<inherit>>":
+        self.virt_auto_boot = "<<inherit>>"
+        return True
+
+    # num is a non-negative integer (0 means default)
+    try:
+        inum = int(num)
+        if (inum == 0) or (inum == 1):
+            self.virt_uefi_boot = inum
+            return True
+        raise CX(_("invalid virt_uefi_boot value (%s): value must be either '0' (disabled) or '1' (enabled)" % inum))
+    except:
+        raise CX(_("invalid virt_uefi_boot value (%s): value must be either '0' (disabled) or '1' (enabled)" % num))
     return True
 
 def set_virt_pxe_boot(self,num):

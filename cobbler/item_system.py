@@ -44,10 +44,12 @@ FIELDS = [
   ["comment","",0,"Comment",True,"Free form text description",0,"str"],
   ["depth",2,0,"",False,"",0,"int"],
   ["server","<<inherit>>",0,"Server Override",True,"See manpage or leave blank",0,"str"],
+  ["virt_uefi_boot","<<inherit>>",0,"Virt UEFI Boot",True,"Boot VM in UEFI mode?",0,"bool"],
   ["virt_path","<<inherit>>",0,"Virt Path",True,"Ex: /directory or VolGroup00",0,"str"],
   ["virt_type","<<inherit>>",0,"Virt Type",True,"Virtualization technology to use",["xenpv","xenfv","qemu","kvm","vmware","openvz"],"str"],
   ["virt_cpus","<<inherit>>",0,"Virt CPUs",True,"",0,"int"],
   ["virt_file_size","<<inherit>>",0,"Virt File Size(GB)",True,"",0,"float"],
+  ["virt_disk_sectors","<<inherit>>",0,"Virt Disk Sector Size",True,"512e or 512 or 4Kn, comma separated for more", 0,"str"],
   ["virt_disk_driver","<<inherit>>",0,"Virt Disk Driver Type",True,"The on-disk format for the virtualization disk",["<<inherit>>","raw"],"str"],
   ["virt_ram","<<inherit>>",0,"Virt RAM (MB)",True,"",0,"int"],
   ["virt_auto_boot","<<inherit>>",0,"Virt Auto Boot",True,"Auto boot this VM?",0,"bool"],
@@ -590,8 +592,14 @@ class System(item.Item):
     def set_virt_disk_driver(self,driver):
         return utils.set_virt_disk_driver(self,driver)
 
+    def set_virt_disk_sectors(self,val):
+        return utils.set_virt_disk_sectors(self,val)
+
     def set_virt_auto_boot(self,num):
         return utils.set_virt_auto_boot(self,num)
+
+    def set_virt_uefi_boot(self,num):
+        return utils.set_virt_uefi_boot(self,num)
 
     def set_virt_pxe_boot(self,num):
         return utils.set_virt_pxe_boot(self,num)
