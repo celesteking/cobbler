@@ -32,6 +32,7 @@ import shlex
 
 import app as koan
 import utils
+from distutils.version import StrictVersion
 
 # The virtinst module will no longer be availabe to import in some
 # distros. We need to get all the info we need from the virt-install
@@ -97,7 +98,7 @@ def _sanitize_disks(disks):
             driver_type = d[2]
 
         if d[1] != 0 or d[0].startswith("/dev"):
-            ret.append((d[0], d[1], driver_type))
+            ret.append((d[0], d[1], driver_type, d[3]))
         else:
             raise koan.InfoException("this virtualization type does not work without a disk image, set virt-size in Cobbler to non-zero")
 
@@ -154,7 +155,7 @@ def _sanitize_nics(nics, bridge, profile_bridge, network_count):
 
 def create_image_file(disks=None, **kwargs):
     disks = _sanitize_disks(disks)
-    for path, size, driver_type in disks:
+    for path, size, driver_type, ss in disks:
         if driver_type is None:
             continue
         if os.path.isdir(path) or os.path.exists(path):
@@ -178,6 +179,7 @@ def build_commandline(uri,
                       virt_type=None,
                       virt_auto_boot=False,
                       virt_pxe_boot=False,
+                      virt_uefi_boot=False,
                       qemu_driver_type=None,
                       qemu_net_type=None,
                       qemu_machine_type=None,
@@ -355,6 +357,9 @@ def build_commandline(uri,
             cmd += "--import "
             import_exists = True
 
+        if virt_uefi_boot:
+            cmd += "--boot uefi "
+
         if arch:
             cmd += "--arch %s " % arch
     else:
@@ -406,9 +411,9 @@ def build_commandline(uri,
         # This needs to be the first disk for import to work
         cmd += "--disk path=%s " % importpath
 
-    for path, size, driver_type in disks:
-        print ("- adding disk: %s of size %s (driver type=%s)" %
-               (path, size, driver_type))
+    for path, size, driver_type, sector_size in disks:
+        print ("- adding disk: %s of size %s (driver type=%s sector_size=%s)" %
+               (path, size, driver_type, sector_size))
         cmd += "--disk path=%s" % (path)
         if str(size) != "0":
             cmd += ",size=%s" % size
@@ -416,6 +421,13 @@ def build_commandline(uri,
             cmd += ",bus=%s" % disk_bus
         if driver_type and not disable_driver_type:
             cmd += ",format=%s" % driver_type
+	if sector_size and StrictVersion(virtinst_version) >= StrictVersion('1.4.0'):
+	    lbs, pbs = {		
+                '4kn':  (4096, 4096),
+                '512e': (512, 4096),
+                '512':  (512, 512),
+	    }[sector_size.lower()]
+	    cmd += ",physical_block_size=%s,logical_block_size=%s" % (pbs,lbs)
         cmd += " "
 
     if floppy:

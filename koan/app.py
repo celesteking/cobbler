@@ -81,9 +81,11 @@ DISPLAY_PARAMS = [
    "virt_ram",
    "virt_disk",
    "virt_disk_driver",
+   "virt_disk_sectors",
    "virt_type",
    "virt_path",
    "virt_auto_boot",
+   "virt_uefi_boot",
    "virt_pxe_boot",
 ]
 
@@ -327,6 +329,7 @@ class Koan:
         self.qemu_machine_type = None
         self.virt_auto_boot    = None
         self.virt_pxe_boot     = None
+        self.virt_uefi_boot    = None
         self.virtinstall_wait  = None
         self.virtinstall_noreboot = None
         self.virtinstall_osimport = None
@@ -1510,12 +1513,14 @@ class Koan:
         path_list           = self.calc_virt_path(pd, virtname)
         size_list           = self.calc_virt_filesize(pd)
         driver_list         = self.calc_virt_drivers(pd)
+        sectors_list        = self.calc_virt_disk_sectors(pd)
         if self.virt_type == 'openvz':
             disks = None
         else:
-            disks           = self.merge_disk_data(path_list,size_list,driver_list)
+            disks           = self.merge_disk_data(path_list,size_list,driver_list, sectors_list)
         virt_auto_boot      = self.calc_virt_autoboot(pd, self.virt_auto_boot)
         virt_pxe_boot       = self.calc_virt_pxeboot(pd, self.virt_pxe_boot)
+        virt_uefi_boot      = self.calc_virt_uefiboot(pd, self.virt_uefi_boot)
 
         results = create_func(
                 name              =  virtname,
@@ -1532,6 +1537,7 @@ class Koan:
                 virt_type         =  self.virt_type,
                 virt_auto_boot    =  virt_auto_boot,
                 virt_pxe_boot     =  virt_pxe_boot,
+                virt_uefi_boot    =  virt_uefi_boot,
                 qemu_driver_type  =  self.qemu_disk_type,
                 qemu_net_type     =  self.qemu_net_type,
                 qemu_machine_type =  self.qemu_machine_type,
@@ -1635,7 +1641,7 @@ class Koan:
 
     #---------------------------------------------------
 
-    def merge_disk_data(self, paths, sizes, drivers):
+    def merge_disk_data(self, paths, sizes, drivers, sectors):
         counter = 0
         disks = []
         for p in paths:
@@ -1648,7 +1654,8 @@ class Koan:
                 driver = drivers[-1]
             else:
                 driver = drivers[counter]
-            disks.append([path,size,driver])
+            sector_size = sectors[counter]
+            disks.append([path,size,driver,sector_size])
             counter = counter + 1
         if len(disks) == 0:
             print "paths:   ", paths
@@ -1705,6 +1712,19 @@ class Koan:
 
     #--------------------------------------------------
 
+    def calc_virt_uefiboot(self,data,override=False):
+        if override:
+           return True
+
+        val = str(self.safe_load(data,'virt_uefi_boot',0)).lower()
+
+        if val in [ "1", "true", "y", "yes" ]:
+           return True
+
+        return False
+
+    #--------------------------------------------------
+
     def calc_virt_filesize(self,data,default_filesize=0):
 
         # MAJOR FIXME: are there overrides?  
@@ -1753,6 +1773,12 @@ class Koan:
                print "invalid disk driver specified, defaulting to 'raw'"
                accum.append('raw')
         return accum
+
+    #---------------------------------------------------
+
+    def calc_virt_disk_sectors(self, data):
+        secs = self.safe_load(data,'virt_disk_sectors',default='raw')
+        return secs.split(",")
 
     #---------------------------------------------------
 
