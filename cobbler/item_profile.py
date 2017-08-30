@@ -44,8 +44,10 @@ FIELDS = [
   ["repos",[],'<<inherit>>',"Repos",True,"Repos to auto-assign to this profile",[],"list"],
   ["comment","","","Comment",True,"Free form text description",0,"str"],
   ["virt_auto_boot","SETTINGS:virt_auto_boot",'<<inherit>>',"Virt Auto Boot",True,"Auto boot this VM?",0,"bool"],
+  ["virt_uefi_boot",0,'<<inherit>>',"Virt UEFI Boot",True,"Boot VM in UEFI mode?",0,"bool"],
   ["virt_cpus",1,'<<inherit>>',"Virt CPUs",True,"integer",0,"int"],
   ["virt_file_size","SETTINGS:default_virt_file_size",'<<inherit>>',"Virt File Size(GB)",True,"",0,"int"],
+  ["virt_disk_sectors",'512','<<inherit>>',"Virt Disk Sector Size",True,"512e or 512 or 4Kn, comma separated for more", 0,"str"],
   ["virt_disk_driver","SETTINGS:default_virt_disk_driver",'<<inherit>>',"Virt Disk Driver Type",True,"The on-disk format for the virtualization disk","raw","str"],
   ["virt_ram","SETTINGS:default_virt_ram",'<<inherit>>',"Virt RAM (MB)",True,"",0,"int"],
   ["depth",1,1,"",False,"",0,"int"],
@@ -212,6 +214,9 @@ class Profile(item.Item):
     def set_virt_auto_boot(self,num):
         return utils.set_virt_auto_boot(self,num)
 
+    def set_virt_uefi_boot(self,num):
+        return utils.set_virt_uefi_boot(self,num)
+
     def set_virt_cpus(self,num):
         return utils.set_virt_cpus(self,num)
 
@@ -220,6 +225,9 @@ class Profile(item.Item):
  
     def set_virt_disk_driver(self,driver):
         return utils.set_virt_disk_driver(self,driver)
+
+    def set_virt_disk_sectors(self,val):
+        return utils.set_virt_disk_sectors(self,val)
 
     def set_virt_ram(self,num):
         return utils.set_virt_ram(self,num)
