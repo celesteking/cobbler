@@ -91,8 +91,8 @@ except:
 
 sectors_supported = False
 rc, response = utils.subprocess_get_response(
-    shlex.split('virt-install --disk=? | grep -q logical_block_size'), True)
-if rc == 0:
+    shlex.split('virt-install --disk=?'), True)
+if rc == 0 and 'logical_block_size' in response:
     sectors_supported = True
 
 def _sanitize_disks(disks):
